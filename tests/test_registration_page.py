@@ -1,69 +1,40 @@
+import pytest
 import time
-import unittest
-from selenium import webdriver
-from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from locators import NAME_INPUT, EMAIL_INPUT, PASSWORD_INPUT, REGISTER_BUTTON, ERROR_MESSAGE
+from utils import generate_login_email
 
+@pytest.fixture
+def driver():
+    from selenium import webdriver
+    driver = webdriver.Chrome()
+    driver.implicitly_wait(10)
+    yield driver
+    driver.quit()
 
-class TestRegistration(unittest.TestCase):
+def test_successful_registration(driver):
+    driver.get("https://stellarburgers.nomoreparties.site/register")
 
-    def test_successful_registration(self):
-        driver = webdriver.Chrome()
-        driver.implicitly_wait(10)
-        try:
-            driver.get("https://stellarburgers.nomoreparties.site/register")
+    driver.find_element(*NAME_INPUT).send_keys("Тестовое Имя Уникальное")
+    driver.find_element(*EMAIL_INPUT).send_keys(generate_login_email())
+    driver.find_element(*PASSWORD_INPUT).send_keys("123456")
+    driver.find_element(*REGISTER_BUTTON).click()
 
-            # Заполнение поля "Имя" уникальным значением
-            name_input = driver.find_element(By.XPATH, '/html/body/div/div/main/div/form/fieldset[1]/div/div/input')
-            name_input.send_keys("Тестовое Имя Уникальное")
+    WebDriverWait(driver, 10).until(EC.url_to_be("https://stellarburgers.nomoreparties.site/login"))
+    assert driver.current_url == "https://stellarburgers.nomoreparties.site/login"
 
-            # Уникальный email с timestamp
-            email_input = driver.find_element(By.XPATH, '/html/body/div/div/main/div/form/fieldset[2]/div/div/input')
-            email_input.send_keys(f"unique_{int(time.time())}@ya.ru")
+def test_registration_existing_user(driver):
+    driver.get("https://stellarburgers.nomoreparties.site/register")
 
-            # Пароль 6 символов
-            password_input = driver.find_element(By.XPATH, '/html/body/div/div/main/div/form/fieldset[3]/div/div/input')
-            password_input.send_keys("123456")
+    driver.find_element(*NAME_INPUT).send_keys("Тестовое Имя")
+    driver.find_element(*EMAIL_INPUT).send_keys("123@ya.ru")
+    driver.find_element(*PASSWORD_INPUT).send_keys("123456")
+    driver.find_element(*REGISTER_BUTTON).click()
 
-            # Кнопка регистрации
-            register_button = driver.find_element(By.XPATH, '/html/body/div/div/main/div/form/button')
-            register_button.click()
+    error_message = WebDriverWait(driver, 10).until(
+        EC.visibility_of_element_located(ERROR_MESSAGE)
+    )
+    assert error_message.is_displayed()
+    assert error_message.text == "Такой пользователь уже существует"
 
-            time.sleep(2)
-
-            self.assertEqual(driver.current_url, "https://stellarburgers.nomoreparties.site/login")
-        finally:
-            driver.quit()
-
-    def test_registration_existing_user(self):
-        driver = webdriver.Chrome()
-        driver.implicitly_wait(10)
-        try:
-            driver.get("https://stellarburgers.nomoreparties.site/register")
-
-            # Имя пользователя
-            name_input = driver.find_element(By.XPATH, '/html/body/div/div/main/div/form/fieldset[1]/div/div/input')
-            name_input.send_keys("Тестовое Имя")
-
-            # Существующий email
-            email_input = driver.find_element(By.XPATH, '/html/body/div/div/main/div/form/fieldset[2]/div/div/input')
-            email_input.send_keys("123@ya.ru")
-
-            # Пароль
-            password_input = driver.find_element(By.XPATH, '/html/body/div/div/main/div/form/fieldset[3]/div/div/input')
-            password_input.send_keys("123456")
-
-            # Кнопка регистрации
-            register_button = driver.find_element(By.XPATH, '/html/body/div/div/main/div/form/button')
-            register_button.click()
-
-            time.sleep(2)
-
-            error_message = driver.find_element(By.XPATH, '/html/body/div/div/main/div/p')
-            self.assertTrue(error_message.is_displayed())
-            self.assertEqual(error_message.text, "Такой пользователь уже существует")
-        finally:
-            driver.quit()
-
-
-if __name__ == "__main__":
-    unittest.main()
