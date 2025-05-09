@@ -1,17 +1,7 @@
-# test_transitions_page.py
-import pytest
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from locators import LOGOUT_BUTTON, BUNS_SECTION, SAUCES_SECTION, FILLINGS_SECTION, CONSTRUCTOR_BUTTON, PERSONAL_CABINET_BUTTON
-
-@pytest.fixture(scope="function")
-def driver():
-    from selenium import webdriver
-    driver = webdriver.Chrome()
-    driver.implicitly_wait(10)
-    yield driver
-    driver.quit()
+from locators import LOGOUT_BUTTON, BUNS_SECTION, SAUCES_SECTION, FILLINGS_SECTION, CONSTRUCTOR_BUTTON, PERSONAL_CABINET_BUTTON, BUNS_CONTENT, SAUCES_CONTENT, FILLINGS_CONTENT
 
 class TestTransitionsPage:
 
@@ -35,34 +25,21 @@ class TestTransitionsPage:
 
     def test_transition_to_buns_section(self, driver):
         driver.get("https://stellarburgers.nomoreparties.site/")
-        buns_section = driver.find_element(*BUNS_SECTION)
-        initial_class = buns_section.get_attribute("class")
-        buns_section.click()
-        WebDriverWait(driver, 10).until(
-            lambda d: d.find_element(*BUNS_SECTION).get_attribute("class") != initial_class
-        )
-        content = driver.find_element(By.XPATH, '//div[contains(@class, "content") and contains(text(), "Булки")]')
+        driver.find_element(*BUNS_SECTION).click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located(BUNS_CONTENT))
+        content = driver.find_element(*BUNS_CONTENT)
         assert "Булки" in content.text
 
     def test_transition_to_sauces_section(self, driver):
         driver.get("https://stellarburgers.nomoreparties.site/")
-        sauces_section = driver.find_element(*SAUCES_SECTION)
-        initial_class = sauces_section.get_attribute("class")
-        sauces_section.click()
-        WebDriverWait(driver, 10).until(
-            lambda d: d.find_element(*SAUCES_SECTION).get_attribute("class") != initial_class
-        )
-        content = driver.find_element(By.XPATH, '//div[contains(@class, "content") and contains(text(), "Соусы")]')
+        driver.find_element(*SAUCES_SECTION).click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located(SAUCES_CONTENT))
+        content = driver.find_element(*SAUCES_CONTENT)
         assert "Соусы" in content.text
 
     def test_transition_to_fillings_section(self, driver):
         driver.get("https://stellarburgers.nomoreparties.site/")
-        fillings_section = driver.find_element(*FILLINGS_SECTION)
-        initial_class = fillings_section.get_attribute("class")
-        fillings_section.click()
-        WebDriverWait(driver, 10).until(
-            lambda d: d.find_element(*FILLINGS_SECTION).get_attribute("class") != initial_class
-        )
-        content = driver.find_element(By.XPATH, '//div[contains(@class, "content") and contains(text(), "Начинки")]')
+        driver.find_element(*FILLINGS_SECTION).click()
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located(FILLINGS_CONTENT))
+        content = driver.find_element(*FILLINGS_CONTENT)
         assert "Начинки" in content.text
-

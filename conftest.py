@@ -1,11 +1,9 @@
-# conftest.py
 import pytest
 from selenium import webdriver
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def driver():
     driver = webdriver.Chrome()
     driver.implicitly_wait(10)
     yield driver
     driver.quit()
-
